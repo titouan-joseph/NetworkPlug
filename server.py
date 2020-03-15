@@ -14,6 +14,18 @@ GPIO.setmode(GPIO.BOARD)
 
 
 class RaspiServer(object):
+
+    def __init__(self):
+        self.status = { 3 : False ,
+                   5 : False ,
+                   7 : False ,
+                   8 : False ,
+                   10 : False ,
+                   11 : False ,
+                   12 : False ,
+                   13 : False ,
+                   }
+
     @cherrypy.expose
     def index(self):
         return """<html>
@@ -55,6 +67,13 @@ class RaspiServer(object):
         elif action == "eteint_pc":
             self.gpiooff([10])
             return "Off 10"
+        elif int(action) in [3, 5, 7, 8, 10, 11, 12, 13]:
+            if self.status[int(action)]:
+                self.gpiooff([int(action)])
+                return "Off " + action
+            else:
+                self.gpioon([int(action)])
+                return "On " + action
 
         else:
             return "Error, action inconue"
@@ -64,6 +83,7 @@ class RaspiServer(object):
             print(termcolor.colored(str(pin), 'green'))
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
+            self.status[pin] = True
 
     @cherrypy.expose()
     def gpiooff(self, pins):
@@ -71,6 +91,7 @@ class RaspiServer(object):
             print(termcolor.colored(str(pin), 'red'))
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.HIGH)
+            self.status[pin] = False
 
 
 if __name__ == '__main__':
